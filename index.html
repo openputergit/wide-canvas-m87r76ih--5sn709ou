@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Finder</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8fafc;
+        }
+        .hero-pattern {
+            background-color: rgba(56, 178, 204, 0.1);
+            background-image: 
+                linear-gradient(rgba(56, 178, 204, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 178, 204, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .loading-spinner {
+            display: none;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #38B2CC;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .country-flag {
+            width: 24px;
+            height: 16px;
+            margin-right: 6px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <header class="bg-white shadow">
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-2 mb-3 md:mb-0">
+                <i class="bi bi-search text-2xl text-teal-500"></i>
+                <h1 class="text-xl font-semibold text-gray-800">Contact Finder</h1>
+            </div>
+            <nav>
+                <ul class="flex space-x-4 md:space-x-6">
+                    <li><a href="#" class="text-gray-600 hover:text-teal-500">Home</a></li>
+                    <li><a href="#" class="text-gray-600 hover:text-teal-500">About</a></li>
+                    <li><a href="#" class="text-gray-600 hover:text-teal-500">FAQ</a></li>
+                    <li><a href="#" class="text-gray-600 hover:text-teal-500">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero-pattern py-16 md:py-24">
+            <div class="container mx-auto px-4 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Find Contact Information Quickly</h2>
+                <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">Search for mobile numbers using just a name. Our tool scans public records to help you reconnect with friends, family, or colleagues.</p>
+                
+                <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-md p-6">
+                    <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+                        <div class="flex-grow">
+                            <input 
+                                type="text" 
+                                id="name-input" 
+                                placeholder="Enter full name (e.g., John Smith)" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                            >
+                        </div>
+                        <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
+                            <select id="region-select" class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
+                                <option value="all">All Regions</option>
+                                <option value="in">India</option>
+                                <option value="us">United States</option>
+                                <option value="uk">United Kingdom</option>
+                                <option value="ca">Canada</option>
+                                <option value="au">Australia</option>
+                            </select>
+                            <button 
+                                id="search-button" 
+                                class="bg-teal-500 hover:bg-teal-600 text-white font-medium py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center"
+                            >
+                                <span>Search</span>
+                                <i class="bi bi-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex flex-col md:flex-row justify-between items-center">
+                        <div class="text-sm text-gray-500 flex items-center mb-2 md:mb-0">
+                            <i class="bi bi-shield-check mr-2 text-teal-500"></i>
+                            <span>Your searches are private and secure</span>
+                        </div>
+                        <div class="text-sm text-gray-500">
+                            <span class="font-medium">Data sources:</span> Social media, public directories, government records
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results-section" class="py-12 hidden">
+            <div class="container mx-auto px-4">
+                <h3 class="text-2xl font-semibold text-gray-800 mb-6">Search Results</h3>
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+                    <p id="result-stats" class="text-gray-600 mb-3 md:mb-0">Showing results for: <span class="font-medium" id="search-term"></span></p>
+                    <div class="flex space-x-2">
+                        <button id="filter-all" class="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm font-medium">All</button>
+                        <button id="filter-social" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm font-medium">Social Media</button>
+                        <button id="filter-public" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm font-medium">Public Records</button>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center my-8 loading-spinner" id="loading-spinner"></div>
+                
+                <div id="results-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Results will be populated here -->
+                </div>
+                
+                <div id="no-results" class="text-center py-8 hidden">
+                    <i class="bi bi-emoji-frown text-4xl text-gray-400"></i>
+                    <p class="mt-4 text-lg text-gray-600">No results found for this name. Try another search.</p>
+                </div>
+
+                <div class="text-center mt-8 hidden" id="more-results">
+                    <button id="load-more" class="bg-white border border-teal-500 text-teal-500 hover:bg-teal-50 font-medium py-2 px-6 rounded-lg transition duration-200">
+                        Load More Results
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="py-16 bg-gray-50">
+            <div class="container mx-auto px-4">
+                <h3 class="text-2xl md:text-3xl font-semibold text-center text-gray-800 mb-12">How It Works</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-sm text-center">
+                        <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="bi bi-person-fill text-2xl text-teal-600"></i>
+                        </div>
+                        <h4 class="text-xl font-semibold mb-3">Enter a Name</h4>
+                        <p class="text-gray-600">Simply type in the full name of the person you're looking for and select a region if known.</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-sm text-center">
+                        <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="bi bi-search text-2xl text-teal-600"></i>
+                        </div>
+                        <h4 class="text-xl font-semibold mb-3">Our System Searches</h4>
+                        <p class="text-gray-600">We scan social media platforms, public records, and databases to find matching contact information.</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-sm text-center">
+                        <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="bi bi-telephone-fill text-2xl text-teal-600"></i>
+                        </div>
+                        <h4 class="text-xl font-semibold mb-3">Get Results</h4>
+                        <p class="text-gray-600">View potential matches with available contact details and verify with additional information.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="py-16">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row items-center">
+                    <div class="md:w-1/2 mb-8 md:mb-0">
+                        <img src="https://images.unsplash.com/photo-1590935217156-5b1e0a418e26?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" alt="Contact search illustration" class="rounded-lg shadow-md">
+                    </div>
+                    
+                    <div class="md:w-1/2 md:pl-12">
+                        <h3 class="text-2xl md:text-3xl font-semibold text-gray-800 mb-6">Why Use Contact Finder?</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <div class="mt-1 mr-4 flex-shrink-0">
+                                    <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">
+                                        <i class="bi bi-lightning-charge-fill text-teal-600"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-medium text-gray-800">Fast & Efficient</h4>
+                                    <p class="text-gray-600">Get results in seconds with our advanced search algorithm.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="mt-1 mr-4 flex-shrink-0">
+                                    <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">
+                                        <i class="bi bi-shield-check-fill text-teal-600"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-medium text-gray-800">Safe & Secure</h4>
+                                    <p class="text-gray-600">Your search history and personal information are kept completely private.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="mt-1 mr-4 flex-shrink-0">
+                                    <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">
+                                        <i class="bi bi-globe2 text-teal-600"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-medium text-gray-800">Global Coverage</h4>
+                                    <p class="text-gray-600">Find contacts from around the world, including specialized search for Indian mobile numbers.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="mt-1 mr-4 flex-shrink-0">
+                                    <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">
+                                        <i class="bi bi-wallet2 text-teal-600"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-medium text-gray-800">Budget-Friendly</h4>
+                                    <p class="text-gray-600">Find the contact information you need without breaking the bank.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Social Media Sources -->
+        <section class="py-16 bg-gray-50">
+            <div class="container mx-auto px-4">
+                <h3 class="text-2xl md:text-3xl font-semibold text-center text-gray-800 mb-8">Our Data Sources</h3>
+                <p class="text-center text-gray-600 max-w-3xl mx-auto mb-10">We scan multiple platforms and databases to find the most accurate contact information for your search.</p>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6 text-center">
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <i class="bi bi-facebook text-3xl text-blue-600 mb-2"></i>
+                        <p class="text-gray-700 font-medium">Facebook</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <i class="bi bi-linkedin text-3xl text-blue-700 mb-2"></i>
+                        <p class="text-gray-700 font-medium">LinkedIn</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <i class="bi bi-instagram text-3xl text-pink-600 mb-2"></i>
+                        <p class="text-gray-700 font-medium">Instagram</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <i class="bi bi-twitter text-3xl text-blue-400 mb-2"></i>
+                        <p class="text-gray-700 font-medium">Twitter</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <i class="bi bi-file-text text-3xl text-green-600 mb-2"></i>
+                        <p class="text-gray-700 font-medium">Public Records</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <i class="bi bi-building text-3xl text-gray-700 mb-2"></i>
+                        <p class="text-gray-700 font-medium">Business Directories</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action -->
+        <section class="py-16 bg-teal-50">
+            <div class="container mx-auto px-4 text-center">
+                <h3 class="text-2xl md:text-3xl font-semibold text-gray-800 mb-4">Ready to Find Someone?</h3>
+                <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">Try our search tool now and reconnect with the people you've been looking for.</p>
+                
+                <a href="#top" class="inline-block bg-teal-500 hover:bg-teal-600 text-white font-medium py-3 px-8 rounded-lg transition duration-200">
+                    Start Searching
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-gray-300 py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h4 class="text-white text-lg font-semibold mb-4">Contact Finder</h4>
+                    <p class="text-sm">Our mission is to help people reconnect with friends, family, and colleagues by providing a simple way to find contact information.</p>
+                </div>
+                
+                <div>
+                    <h4 class="text-white text-lg font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-teal-300">Home</a></li>
+                        <li><a href="#" class="hover:text-teal-300">About Us</a></li>
+                        <li><a href="#" class="hover:text-teal-300">How It Works</a></li>
+                        <li><a href="#" class="hover:text-teal-300">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-white text-lg font-semibold mb-4">Legal</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-teal-300">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-teal-300">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-teal-300">Data Protection</a></li>
+                        <li><a href="#" class="hover:text-teal-300">Cookie Policy</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-white text-lg font-semibold mb-4">Contact Us</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center"><i class="bi bi-envelope mr-2"></i> support@contactfinder.com</li>
+                        <li class="flex items-center"><i class="bi bi-telephone mr-2"></i> (555) 123-4567</li>
+                        <li class="flex items-center"><i class="bi bi-geo-alt mr-2"></i> 123 Search St., Finder City</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-8 text-sm text-center">
+                <p>&copy; 2023 Contact Finder. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const nameInput = document.getElementById('name-input');
+            const regionSelect = document.getElementById('region-select');
+            const searchButton = document.getElementById('search-button');
+            const resultsSection = document.getElementById('results-section');
+            const resultsContainer = document.getElementById('results-container');
+            const noResults = document.getElementById('no-results');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const searchTerm = document.getElementById('search-term');
+            const resultStats = document.getElementById('result-stats');
+            const moreResults = document.getElementById('more-results');
+            const loadMoreButton = document.getElementById('load-more');
+            
+            // Filter buttons
+            const filterAll = document.getElementById('filter-all');
+            const filterSocial = document.getElementById('filter-social');
+            const filterPublic = document.getElementById('filter-public');
+            
+            // Sample data for demonstration purposes including Indian numbers
+            const sampleData = [
+                // US numbers
+                { 
+                    name: 'John Smith', 
+                    phone: '+1 (555) 123-4567', 
+                    location: 'New York, NY', 
+                    country: 'us',
+                    source: 'Public Directory', 
+                    sourceType: 'public',
+                    email: 'john.smith@example.com',
+                    socialProfiles: ['Facebook', 'LinkedIn'],
+                    lastUpdated: '3 months ago' 
+                },
+                { 
+                    name: 'John A. Smith', 
+                    phone: '+1 (555) 987-6543', 
+                    location: 'Los Angeles, CA', 
+                    country: 'us',
+                    source: 'Social Media (LinkedIn)', 
+                    sourceType: 'social',
+                    email: 'jsmith@company.com',
+                    socialProfiles: ['LinkedIn', 'Twitter'],
+                    lastUpdated: '1 year ago' 
+                },
+                
+                // Indian numbers
+                { 
+                    name: 'Rahul Sharma', 
+                    phone: '+91 98765 43210', 
+                    location: 'New Delhi, India', 
+                    country: 'in',
+                    source: 'Public Directory', 
+                    sourceType: 'public',
+                    email: 'rahul.s@example.com',
+                    socialProfiles: ['Facebook', 'Instagram'],
+                    lastUpdated: '2 months ago' 
+                },
+                { 
+                    name: 'Priya Patel', 
+                    phone: '+91 87654 32109', 
+                    location: 'Mumbai, India', 
+                    country: 'in',
+                    source: 'Social Media (Facebook)', 
+                    sourceType: 'social',
+                    email: 'priya.patel@company.in',
+                    socialProfiles: ['Facebook', 'Instagram', 'LinkedIn'],
+                    lastUpdated: '5 months ago' 
+                },
+                { 
+                    name: 'Amit Kumar', 
+                    phone: '+91 76543 21098', 
+                    location: 'Bangalore, India', 
+                    country: 'in',
+                    source: 'Business Registry', 
+                    sourceType: 'public',
+                    email: 'amit.k@techfirm.in',
+                    socialProfiles: ['LinkedIn'],
+                    lastUpdated: '1 month ago' 
+                },
+                
+                // UK numbers
+                { 
+                    name: 'James Wilson', 
+                    phone: '+44 7700 900123', 
+                    location: 'London, UK', 
+                    country: 'uk',
+                    source: 'Voter Records', 
+                    sourceType: 'public',
+                    email: 'j.wilson@example.co.uk',
+                    socialProfiles: ['LinkedIn', 'Twitter'],
+                    lastUpdated: '6 months ago' 
+                },
+                
+                // Additional samples
+                { 
+                    name: 'Jonathan Smith', 
+                    phone: '+1 (555) 234-5678', 
+                    location: 'Chicago, IL', 
+                    country: 'us',
+                    source: 'Business Registry', 
+                    sourceType: 'public',
+                    email: 'jonathan@business.com',
+                    socialProfiles: ['LinkedIn'],
+                    lastUpdated: '6 months ago' 
+                },
+                { 
+                    name: 'J. Smith', 
+                    phone: '+1 (555) 345-6789', 
+                    location: 'Houston, TX', 
+                    country: 'us',
+                    source: 'Social Media (Instagram)', 
+                    sourceType: 'social',
+                    email: null,
+                    socialProfiles: ['Instagram', 'Twitter'],
+                    lastUpdated: '2 months ago' 
+                }
+            ];
+            
+            searchButton.addEventListener('click', performSearch);
+            nameInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            // Filter event listeners
+            filterAll.addEventListener('click', () => applyFilter('all'));
+            filterSocial.addEventListener('click', () => applyFilter('social'));
+            filterPublic.addEventListener('click', () => applyFilter('public'));
+            
+            // Load more results
+            loadMoreButton.addEventListener('click', loadMoreResults);
+            
+            // Current filter and results state
+            let currentFilter = 'all';
+            let allResults = [];
+            let displayedResults = [];
+            let currentPage = 1;
+            const resultsPerPage = 3;
+            
+            function performSearch() {
+                const name = nameInput.value.trim();
+                const region = regionSelect.value;
+                
+                if (name.length < 3) {
+                    alert('Please enter at least 3 characters to search.');
+                    return;
+                }
+                
+                // Reset state
+                currentPage = 1;
+                allResults = [];
+                displayedResults = [];
+                
+                // Show loading state
+                resultsSection.classList.remove('hidden');
+                resultsContainer.innerHTML = '';
+                noResults.classList.add('hidden');
+                moreResults.classList.add('hidden');
+                loadingSpinner.style.display = 'block';
+                
+                // Update search term display
+                searchTerm.textContent = `"${name}"${region !== 'all' ? ` in ${getRegionName(region)}` : ''}`;
+                
+                // Simulate API call with setTimeout
+                setTimeout(() => {
+                    loadingSpinner.style.display = 'none';
+                    
+                    // Filter sample data to simulate search results
+                    const normalizedInput = name.toLowerCase();
+                    let results = sampleData.filter(person => 
+                        person.name.toLowerCase().includes(normalizedInput)
+                    );
+                    
+                    // Filter by region if specified
+                    if (region !== 'all') {
+                        results = results.filter(person => person.country === region);
+                    }
+                    
+                    if (results.length > 0) {
+                        // Store all results and display first page
+                        allResults = results;
+                        displayResults(results.slice(0, resultsPerPage));
+                        
+                        // Show load more button if there are more results
+                        if (results.length > resultsPerPage) {
+                            moreResults.classList.remove('hidden');
+                        } else {
+                            moreResults.classList.add('hidden');
+                        }
+                        
+                        // Update result count
+                        resultStats.innerHTML = `Found <span class="font-medium">${results.length}</span> results for: <span class="font-medium">${searchTerm.textContent}</span>`;
+                    } else {
+                        noResults.classList.remove('hidden');
+                    }
+                }, 1500);
+            }
+            
+            function displayResults(results) {
+                if (currentPage === 1) {
+                    resultsContainer.innerHTML = '';
+                }
+                
+                displayedResults = [...displayedResults, ...results];
+                
+                results.forEach(person => {
+                    const resultCard = document.createElement('div');
+                    resultCard.className = `bg-white rounded-lg shadow-md p-6 fade-in ${person.sourceType === 'social' ? 'social-source' : 'public-source'}`;
+                    
+                    // Get flag icon based on country code
+                    const flagHtml = `<img class="country-flag" src="https://flagcdn.com/w40/${person.country}.png" alt="${getRegionName(person.country)} flag">`;
+                    
+                    resultCard.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <h4 class="text-xl font-semibold text-gray-800 mb-3">${person.name}</h4>
+                            <div class="bg-${person.sourceType === 'social' ? 'blue' : 'green'}-100 text-${person.sourceType === 'social' ? 'blue' : 'green'}-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                ${person.sourceType === 'social' ? 'Social' : 'Public'}
+                            </div>
+                        </div>
+                        <div class="space-y-2 mb-4">
+                            <div class="flex items-center">
+                                <i class="bi bi-telephone text-teal-500 mr-2"></i>
+                                <span class="text-gray-700 flex items-center">
+                                    ${flagHtml} ${person.phone}
+                                </span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="bi bi-geo-alt text-teal-500 mr-2"></i>
+                                <span class="text-gray-700">${person.location}</span>
+                            </div>
+                            ${person.email ? `
+                            <div class="flex items-center">
+                                <i class="bi bi-envelope text-teal-500 mr-2"></i>
+                                <span class="text-gray-700">${person.email}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${person.socialProfiles && person.socialProfiles.length > 0 ? `
+                        <div class="mb-4">
+                            <p class="text-sm text-gray-500 mb-1">Profiles:</p>
+                            <div class="flex space-x-2">
+                                ${person.socialProfiles.map(profile => {
+                                    let icon = '';
+                                    if (profile === 'Facebook') icon = 'facebook';
+                                    if (profile === 'LinkedIn') icon = 'linkedin';
+                                    if (profile === 'Twitter') icon = 'twitter';
+                                    if (profile === 'Instagram') icon = 'instagram';
+                                    
+                                    return `<span class="text-xs bg-gray-100 rounded-full px-2 py-1 flex items-center">
+                                        <i class="bi bi-${icon} mr-1"></i> ${profile}
+                                    </span>`;
+                                }).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="text-xs text-gray-500">
+                            <div class="flex justify-between">
+                                <span>Source: ${person.source}</span>
+                                <span>Updated: ${person.lastUpdated}</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between">
+                            <button class="text-teal-500 hover:text-teal-700 text-sm font-medium view-profile" data-name="${person.name}">
+                                <i class="bi bi-eye mr-1"></i> View Full Profile
+                            </button>
+                            <button class="text-gray-500 hover:text-gray-700 text-sm report-btn">
+                                <i class="bi bi-flag mr-1"></i> Report
+                            </button>
+                        </div>
+                    `;
+                    resultsContainer.appendChild(resultCard);
+                });
+                
+                // Add event listeners for the new buttons
+                document.querySelectorAll('.view-profile').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const name = this.getAttribute('data-name');
+                        alert(`Full profile for ${name} would open in a premium version.`);
+                    });
+                });
+                
+                document.querySelectorAll('.report-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        alert('Thank you for reporting this listing. Our team will review it.');
+                    });
+                });
+            }
+            
+            function loadMoreResults() {
+                const startIndex = currentPage * resultsPerPage;
+                currentPage++;
+                
+                // Get the next batch of results based on filter
+                let nextResults = [];
+                if (currentFilter === 'all') {
+                    nextResults = allResults.slice(startIndex, startIndex + resultsPerPage);
+                } else {
+                    const filteredResults = allResults.filter(person => person.sourceType === currentFilter);
+                    const displayedFilteredCount = displayedResults.filter(person => person.sourceType === currentFilter).length;
+                    nextResults = filteredResults.slice(displayedFilteredCount, displayedFilteredCount + resultsPerPage);
+                }
+                
+                if (nextResults.length > 0) {
+                    // Show loading and then display new results
+                    loadingSpinner.style.display = 'block';
+                    setTimeout(() => {
+                        loadingSpinner.style.display = 'none';
+                        displayResults(nextResults);
+                        
+                        // Hide load more button if no more results
+                        const totalDisplayed = currentFilter === 'all' 
+                            ? displayedResults.length 
+                            : displayedResults.filter(person => person.sourceType === currentFilter).length;
+                            
+                        const totalAvailable = currentFilter === 'all'
+                            ? allResults.length
+                            : allResults.filter(person => person.sourceType === currentFilter).length;
+                            
+                        if (totalDisplayed >= totalAvailable) {
+                            moreResults.classList.add('hidden');
+                        }
+                    }, 800);
+                } else {
+                    moreResults.classList.add('hidden');
+                }
+            }
+            
+            function applyFilter(filter) {
+                currentFilter = filter;
+                currentPage = 1;
+                
+                // Update active filter button styles
+                [filterAll, filterSocial, filterPublic].forEach(btn => {
+                    btn.classList.remove('bg-teal-100', 'text-teal-700');
+                    btn.classList.add('bg-gray-200', 'text-gray-700');
+                });
+                
+                if (filter === 'all') {
+                    filterAll.classList.remove('bg-gray-200', 'text-gray-700');
+                    filterAll.classList.add('bg-teal-100', 'text-teal-700');
+                    
+                    // Display all results from first page
+                    resultsContainer.innerHTML = '';
+                    displayResults(allResults.slice(0, resultsPerPage));
+                    
+                    // Show load more if needed
+                    if (allResults.length > resultsPerPage) {
+                        moreResults.classList.remove('hidden');
+                    } else {
+                        moreResults.classList.add('hidden');
+                    }
+                } else {
+                    // Set active button
+                    if (filter === 'social') {
+                        filterSocial.classList.remove('bg-gray-200', 'text-gray-700');
+                        filterSocial.classList.add('bg-teal-100', 'text-teal-700');
+                    } else {
+                        filterPublic.classList.remove('bg-gray-200', 'text-gray-700');
+                        filterPublic.classList.add('bg-teal-100', 'text-teal-700');
+                    }
+                    
+                    // Filter results
+                    const filteredResults = allResults.filter(person => person.sourceType === filter);
+                    
+                    if (filteredResults.length > 0) {
+                        resultsContainer.innerHTML = '';
+                        noResults.classList.add('hidden');
+                        displayResults(filteredResults.slice(0, resultsPerPage));
+                        
+                        // Show load more if needed
+                        if (filteredResults.length > resultsPerPage) {
+                            moreResults.classList.remove('hidden');
+                        } else {
+                            moreResults.classList.add('hidden');
+                        }
+                    } else {
+                        resultsContainer.innerHTML = '';
+                        noResults.classList.remove('hidden');
+                        moreResults.classList.add('hidden');
+                    }
+                }
+                
+                // Update result stats
+                const filteredCount = filter === 'all' 
+                    ? allResults.length 
+                    : allResults.filter(person => person.sourceType === filter).length;
+                    
+                resultStats.innerHTML = `Found <span class="font-medium">${filteredCount}</span> ${filter !== 'all' ? filter : ''} results for: <span class="font-medium">${searchTerm.textContent}</span>`;
+            }
+            
+            // Helper to get region name from code
+            function getRegionName(code) {
+                const regions = {
+                    'in': 'India',
+                    'us': 'United States',
+                    'uk': 'United Kingdom',
+                    'ca': 'Canada',
+                    'au': 'Australia'
+                };
+                return regions[code] || code.toUpperCase();
+            }
+            
+            // Smooth scrolling for CTA button
+            document.querySelectorAll('a[href="#top"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                    nameInput.focus();
+                });
+            });
+        });
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
